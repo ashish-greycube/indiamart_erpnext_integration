@@ -31,7 +31,9 @@ app_license = "None"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+	"Lead" : "public/js/lead.js",
+	"Integration Request" : "public/js/integration_request.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -105,7 +107,13 @@ app_license = "None"
 
 # Scheduled Tasks
 # ---------------
-
+scheduler_events = {
+	"cron": {
+		"0/5 * * * *": [
+			"indiamart_erpnext_integration.indiamart_erpnext_controller.auto_pull_indiamart_leads"
+		]
+	}
+}
 # scheduler_events = {
 # 	"all": [
 # 		"indiamart_erpnext_integration.tasks.all"
@@ -139,9 +147,9 @@ app_license = "None"
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
-# override_doctype_dashboards = {
-# 	"Task": "indiamart_erpnext_integration.task.get_dashboard_data"
-# }
+override_doctype_dashboards = {
+	"Integration Request": "indiamart_erpnext_integration.indiamart_erpnext_controller.get_integration_request_dashboard_data"
+}
 
 # exempt linked doctypes from being automatically cancelled
 #
@@ -186,3 +194,9 @@ user_data_fields = [
 # Recommended only for DocTypes which have limited documents with untranslated names
 # For example: Role, Gender, etc.
 # translated_search_doctypes = []
+fixtures = [
+      {
+        "dt": "Custom Field", 
+        "filters": [["name", "in", ["Lead-indiamart_section","Lead-query_id_cf"	]]]
+      }
+]

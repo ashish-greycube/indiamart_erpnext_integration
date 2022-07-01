@@ -54,7 +54,8 @@
   {
    "fieldname": "last_api_call_time",
    "fieldtype": "Datetime",
-   "label": "Last API Call Time"
+   "label": "Last API Call Time",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_5",
@@ -113,7 +114,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-06-30 14:52:48.247085",
+ "modified": "2022-07-01 15:05:59.438946",
  "modified_by": "Administrator",
  "module": "Indiamart Erpnext Integration",
  "name": "Indiamart Settings",

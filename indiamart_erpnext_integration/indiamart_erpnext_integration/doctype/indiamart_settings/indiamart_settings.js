@@ -4,10 +4,10 @@
 frappe.ui.form.on('Indiamart Settings', {
 	refresh: function(frm) {
 if (frm.is_new()==undefined && frm.doc.enabled==1) {
-	frm.add_custom_button('Manually Pull Lead from Indiamart', () => {
+	frm.add_custom_button('Manually Pull Lead', () => {
 		let now_time=frappe.datetime.now_datetime()
 		let d = new frappe.ui.Dialog({
-			title: 'Enter details',
+			title: 'Use only, when you need to retrigger indimart lead pull for a particular time frame',
 			fields: [
 				{
 					label: 'Start Date Time',
@@ -37,6 +37,7 @@ if (frm.is_new()==undefined && frm.doc.enabled==1) {
 					callback: (r) => {
 						// on success
 						console.log(r)
+						frappe.msgprint(__('Execution started successfully'));
 					},
 					error: (r) => {
 						// on error

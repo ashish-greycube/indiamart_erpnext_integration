@@ -12,14 +12,12 @@ from indiamart_erpnext_integration.indiamart_erpnext_controller import make_erpn
 
 class IndiamartLead(Document):
 		def after_insert(self):
-			print('iiii')
 			frappe.db.set_value('Indiamart Lead', self.name, 'created_on', self.creation)
 			indiamart_lead_json=json.loads(self.indiamart_lead_json)
 			indiamart_lead_name=self.name
 			enqueue(method='indiamart_erpnext_integration.indiamart_erpnext_controller.make_erpnext_lead_from_inidamart',queue='long', **{"lead_values": indiamart_lead_json, "indiamart_lead_name":indiamart_lead_name})
-			# output=make_erpnext_lead_from_inidamart(indiamart_lead_json,indiamart_lead_name)
-			# print('output',output)
 			return
+
 		@frappe.whitelist()
 		def retry_lead_creation(self):
 			indiamart_lead_json=json.loads(self.indiamart_lead_json)
@@ -29,7 +27,6 @@ class IndiamartLead(Document):
 				frappe.msgprint(_("Output is {0}.").format(frappe.bold(output)), alert=False,indicator="green")
 			else:
 				frappe.msgprint(_("Error occured. Please check error log."), alert=False,indicator="red")
-
 
 @frappe.whitelist()
 def get_connected_indiamart_lead(query_id_cf):
@@ -82,4 +79,4 @@ where lead.query_id_cf =%s""",
 			l_list.append(l.l)
 		return l_list
 	else:
-		return []  		
+		return [] 

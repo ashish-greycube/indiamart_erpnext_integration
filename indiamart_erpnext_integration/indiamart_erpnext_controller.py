@@ -75,7 +75,7 @@ def get_indiamart_api_url(indiamart_settings,start_time=None,end_time=None):
 		start_time=format_datetime(start_time,URL_DATETIME_FORMAT)
 		end_time=format_datetime(end_time,URL_DATETIME_FORMAT)
 		# we don't change last call time as it is a manual attempt
-		now_api_call_time=indiamart_settings.get('last_api_call_time') or format_datetime(now_datetime(),URL_DATETIME_FORMAT) 
+		now_api_call_time=indiamart_settings.get('last_api_call_time') or now_datetime()
 	#  to do : put in config
 	api_url = INDIAMART_URL.format(
 				indiamart_settings.get('glusr_mobile'),

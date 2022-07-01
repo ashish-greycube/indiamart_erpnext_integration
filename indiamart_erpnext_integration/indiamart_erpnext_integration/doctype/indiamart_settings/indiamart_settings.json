@@ -33,22 +33,22 @@
    "label": "Lead Mapping Detail"
   },
   {
-   "depends_on": "enabled",
    "description": "This is the primary mobile number of your account registered with IndiaMART. This is a mandatory input parameter.",
    "fieldname": "glusr_mobile",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Mobile",
+   "mandatory_depends_on": "enabled",
    "options": "Phone",
    "reqd": 1
   },
   {
-   "depends_on": "enabled",
    "description": "Go to seller.indiamart.com->Settings->Account Settings(tab)->Generate Key\nThis is a unique API Key which is received on your primary email. This is also a mandatory input parameter.",
    "fieldname": "glusr_mobile_key",
    "fieldtype": "Password",
    "in_list_view": 1,
    "label": "API Key",
+   "mandatory_depends_on": "enabled",
    "reqd": 1
   },
   {
@@ -114,7 +114,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-07-01 15:05:59.438946",
+ "modified": "2022-07-01 18:20:20.384625",
  "modified_by": "Administrator",
  "module": "Indiamart Erpnext Integration",
  "name": "Indiamart Settings",

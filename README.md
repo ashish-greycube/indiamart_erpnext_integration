@@ -26,7 +26,7 @@
 
 **Features**
 
-* Pull Leads from IndiaMart via API every 5 mins
+* Pull Leads from IndiaMart via API every 5 mins. Overlap is such that no lead is lost.
 * Create Leads automatically in ERPNext
 * Maps respective fields of IndiaMart with ERPNext Lead.👀️ 
 
@@ -36,6 +36,7 @@
 * Handle Duplicate/ Repeat Leads based on mobile_no/ email
 * Automatically create Opportunity for repeat leads
 * IndiaMart Integration Log maintained
+* Facility to map indiamart provided Query Type in Inquiry to your Lead Source 
 * Facility to manaully pull leads for specific time frame
 * App workspace with all related links
   

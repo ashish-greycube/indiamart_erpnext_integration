@@ -56,7 +56,8 @@ def get_indiamart_configuration():
 
 def get_indiamart_api_url(indiamart_settings,start_time=None,end_time=None):
 	URL_DATETIME_FORMAT = 'd-MMM-yHH:mm:ss'
-	INDIAMART_URL = 'https://mapi.indiamart.com/wservce/enquiry/listing/GLUSR_MOBILE/{0}/GLUSR_MOBILE_KEY/{1}/Start_Time/{2}/End_Time/{3}/'
+	# INDIAMART_URL = 'https://mapi.indiamart.com/wservce/enquiry/listing/GLUSR_MOBILE/{0}/GLUSR_MOBILE_KEY/{1}/Start_Time/{2}/End_Time/{3}/'
+	INDIAMART_URL = 'https://mapi.indiamart.com/wservce/crm/crmListing/v2/?glusr_crm_key={1}&start_time={2}&end_time={3}'
 
 	#  scheduler flow
 	if start_time==None:
@@ -87,16 +88,17 @@ def get_indiamart_api_url(indiamart_settings,start_time=None,end_time=None):
 
 
 def fetch_indiamart_data_and_make_integration_request(api_url,now_api_call_time):
-	valid_error_messages=['There are no leads in the given time duration.please try for a different duration.',
+	valid_error_messages=['There are no leads in the given time duration. Please try for a different duration.',
 												'It is advised to hit this API once in every 5 minutes, but it seems that you have crossed this limit. Please try again after 5 minutes.']
-	# response=[{"RN": "1", "QUERY_ID": "331910901", "QTYPE": "P", "SENDERNAME": "Hitesh", "SENDEREMAIL": "hziteshgur1uwani.hg@gmail.com", "SUBJECT": "Buyer Call", "DATE_RE": "01 Jul 2022", "DATE_R": "01-Jul-22", "DATE_TIME_RE": "01-Jul-2022 02:21:52 PM", "GLUSR_USR_COMPANYNAME": "RK Agencies", "READ_STATUS": None, "SENDER_GLUSR_USR_ID": None, "MOB": "1831838695", "COUNTRY_FLAG": "", "QUERY_MODID": "DIRECT", "LOG_TIME": "20220701000000", "QUERY_MODREFID": None, "DIR_QUERY_MODREF_TYPE": None, "ORG_SENDER_GLUSR_ID": None, "ENQ_MESSAGE": None, "ENQ_ADDRESS": "", "ENQ_CALL_DURATION": "80 Secs", "ENQ_RECEIVER_MOB": "7948991308", "ENQ_CITY": "Bilaspur", "ENQ_STATE": "Chhattisgarh", "PRODUCT_NAME": None, "COUNTRY_ISO": "IN", "EMAIL_ALT": None, "MOBILE_ALT": None, "PHONE": None, "PHONE_ALT": None, "IM_MEMBER_SINCE": None, "TOTAL_COUNT": "2"}]
+    # v2
+	#  response={'CODE': 200, 'STATUS': 'SUCCESS', 'MESSAGE': '', 'TOTAL_RECORDS': 2, 'RESPONSE': [{'UNIQUE_QUERY_ID': '2243859917', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 09:34:45', 'SENDER_NAME': 'Shuaib', 'SENDER_MOBILE': '+91-8384869226', 'SENDER_EMAIL': '', 'SENDER_COMPANY': '', 'SENDER_ADDRESS': 'Dehradun, Uttarakhand', 'SENDER_CITY': 'Dehradun', 'SENDER_STATE': 'Uttarakhand', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Fuel Pressure Regulator Sensor', 'QUERY_MESSAGE': 'I want to buy Fuel Pressure Regulator Sensor.\r\rBefore purchasing I would like to know the price details.\r\rKindly send me price and other details.<br> Quantity :   1<br> Quantity Unit :   piece<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from Local Area will be Preferred<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}, {'UNIQUE_QUERY_ID': '2243945858', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 10:56:07', 'SENDER_NAME': 'Mamilla Ganga Shekhar', 'SENDER_MOBILE': '+91-9100843314', 'SENDER_EMAIL': 'gangadharmamilla@gmail.com', 'SENDER_COMPANY': 'VS Automation', 'SENDER_ADDRESS': 'KTR Colony, Hyderabad, Telangana,         500072', 'SENDER_CITY': 'Hyderabad', 'SENDER_STATE': 'Telangana', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Capacitive Proximity Sensors', 'QUERY_MESSAGE': 'I want to buy Capacitive Proximity Sensors.<br> Model :   Prk3pl1.btt3x4t<br> Quantity :   6<br> Quantity Unit :   piece<br> Sensing Distance :   0-0.3 Meter<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from all over India can contact<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}]}
 	response = make_post_request(api_url)
 	if not response:
 		return
-	response =list(response)
 
 	if isinstance(response, string_types):
 		response = json.loads(response)	
+	response_result =list(response.get("RESPONSE"))
 	data={
 		'api_url':api_url
 	}
@@ -106,11 +108,11 @@ def fetch_indiamart_data_and_make_integration_request(api_url,now_api_call_time)
 	}
 	error=None
 	output={
-		'output':response
+		'output':response_result
 	}
 
-	if response[0].get('Error_Message'):
-		error=response[0].get('Error_Message')
+	if response.get('MESSAGE') and response.get('MESSAGE')!="":
+		error=response.get('MESSAGE')
 		
 	if not error:
 		integration_request=create_request_log(data=frappe._dict(request_log_data),integration_type="Remote",service_name="Indiamart")
@@ -119,7 +121,7 @@ def fetch_indiamart_data_and_make_integration_request(api_url,now_api_call_time)
 		integration_request=create_request_log(data=frappe._dict(request_log_data),integration_type="Remote",service_name="Indiamart",error=frappe._dict({"error":error}))
 		frappe.db.set_value('Integration Request', integration_request.name, 'output', json.dumps(output))
 
-	error_message=response[0].get('Error_Message')
+	error_message=response.get('MESSAGE')
 	status=None
 
 	if (not error_message):
@@ -136,10 +138,11 @@ def fetch_indiamart_data_and_make_integration_request(api_url,now_api_call_time)
 		frappe.log_error(error_message, title=_('Indiamart Error'))	
 
 	if 	status!='Failed':
-		for index in range(len(response)):
+		#  use response_result
+		for index in range(len(response_result)):
 				lead_values={}
-				for key in response[index]:
-						lead_values.update({key:response[index][key]})
+				for key in response_result[index]:
+						lead_values.update({key:response_result[index][key]})
 				# make_lead_from_inidamart(lead_values)
 				make_indiamart_lead_records(lead_values,integration_request.name)
 		frappe.db.set_value('Integration Request', integration_request.name, 'status', 'Completed')
@@ -147,10 +150,10 @@ def fetch_indiamart_data_and_make_integration_request(api_url,now_api_call_time)
 	return
 
 def make_indiamart_lead_records(lead_values,integration_request,status='Queued',output='Not Processed'):
-	existing_indiamart_lead = frappe.db.get_value("Indiamart Lead", {"query_id": lead_values.get('QUERY_ID')})
+	existing_indiamart_lead = frappe.db.get_value("Indiamart Lead", {"query_id": lead_values.get('UNIQUE_QUERY_ID')})
 	if not existing_indiamart_lead:
 		indiamart_lead=frappe.new_doc('Indiamart Lead')
-		indiamart_lead.query_id=lead_values.get('QUERY_ID',None)
+		indiamart_lead.query_id=lead_values.get('UNIQUE_QUERY_ID',None)
 		indiamart_lead.indiamart_lead_json=json.dumps(lead_values)
 		indiamart_lead.status=status
 		indiamart_lead.output=output
@@ -164,15 +167,15 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 	try:
 		output=None
 		user=frappe.db.get_single_value('Indiamart Settings', 'default_lead_owner')
-		country=frappe.get_value("Country", {"code": lead_values.get("COUNTRY_ISO", "IN").lower()}) or 'India'
-		state=lead_values.get('ENQ_STATE',None)
-		city=lead_values.get('ENQ_CITY',None)
-		email_id=lead_values.get('SENDEREMAIL',None)
-		mobile_no=lead_values.get('MOB',None)		
+		country=frappe.get_value("Country", {"code": lead_values.get("SENDER_COUNTRY_ISO", "IN").lower()}) or 'India'
+		state=lead_values.get('SENDER_STATE',None)
+		city=lead_values.get('SENDER_CITY',None)
+		email_id=lead_values.get('SENDER_EMAIL',None)
+		mobile_no=lead_values.get('SENDER_MOBILE',None)		
 
 		lead_owner=user
 		lead_name = None
-		lead_name = frappe.db.get_value("Lead", {"query_id_cf": lead_values.get('QUERY_ID')})
+		lead_name = frappe.db.get_value("Lead", {"query_id_cf": lead_values.get('UNIQUE_QUERY_ID')})
 		# It is a new lead from indiamart
 		if not lead_name :
 			check_duplicate_mobile_no=mobile_no
@@ -197,16 +200,16 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 					elif not lead_name:
 					# it is finally a fresh lead
 						# source logic 
-						if lead_values.get('QTYPE') == 'W' :
+						if lead_values.get('QUERY_TYPE') == 'W' :
 							source= frappe.db.get_single_value('Indiamart Settings', 'direct_lead_source')
-						elif lead_values.get('QTYPE') == 'B' :
+						elif lead_values.get('QUERY_TYPE') == 'B' :
 							source= frappe.db.get_single_value('Indiamart Settings', 'buy_lead_source')
-						elif lead_values.get('QTYPE') == 'P' :
+						elif lead_values.get('QUERY_TYPE') == 'P' :
 							source= frappe.db.get_single_value('Indiamart Settings', 'call_lead_source')
 							
-						if lead_values.get('GLUSR_USR_COMPANYNAME'):
+						if lead_values.get('SENDER_COMPANY'):
 							organization_lead=1
-							company_name=lead_values.get('GLUSR_USR_COMPANYNAME')
+							company_name=lead_values.get('SENDER_COMPANY')
 							address_type='Office'
 							address_title='Work'
 						else:
@@ -217,17 +220,17 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 						
 						notes_html="<div>Product Name :{0}</div><div>Subject :{1}</div><div>Message :{2}</div><div>Lead Date :{3}</div><div>Alternate EmailID :{4}</div><div>Alternate Mobile :{5}</div><div>India Mart Query ID :{6}</div>" \
 						.format( \
-										frappe.bold(lead_values.get('PRODUCT_NAME','Not specified')),
+										frappe.bold(lead_values.get('QUERY_PRODUCT_NAME','Not specified')),
 										frappe.bold(lead_values.get('SUBJECT','Not specified')),
-										frappe.bold(lead_values.get('ENQ_MESSAGE','Not specified')),
-										frappe.bold(lead_values.get('DATE_TIME_RE','Not specified')),
+										frappe.bold(lead_values.get('QUERY_MESSAGE','Not specified')),
+										frappe.bold(lead_values.get('QUERY_TIME','Not specified')),
 										frappe.bold(lead_values.get('EMAIL_ALT','Not specified')),
 										frappe.bold(lead_values.get('MOBILE_ALT','Not specified')),
-										frappe.bold(lead_values.get('QUERY_ID','Not specified'))
+										frappe.bold(lead_values.get('UNIQUE_QUERY_ID','Not specified'))
 										)
 
 						n  = 140
-						address=lead_values.get('ENQ_ADDRESS')
+						address=lead_values.get('SENDER_ADDRESS')
 						pincode=None
 						address_line1,address_line2=None,None
 
@@ -244,7 +247,7 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 										address_line2=address[index : index + n]
 						lead=frappe.new_doc('Lead')
 						lead_value_dict={
-							"lead_name": lead_values.get('SENDERNAME'),
+							"lead_name": lead_values.get('SENDER_NAME'),
 							"email_id":email_id,
 							"mobile_no": mobile_no,
 							"source":source or '',
@@ -254,7 +257,7 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 							"state":state,
 							"country":country ,
 							"city": city or 'Not specified',
-							"query_id_cf":lead_values.get('QUERY_ID'),
+							"query_id_cf":lead_values.get('UNIQUE_QUERY_ID'),
 							"address_title":address_title or 'Other',
 							"address_type":address_type or 'Other',
 							"address_line1":address_line1 or 'Not specified',
@@ -293,13 +296,13 @@ def update_existing_lead(lead_name,lead_values):
 		if lead_status not in ['Converted','Quotation']:
 			notes_html="<br><br><div><B>New Requirement</B></div><div>Product Name :{0}</div><div>Subject :{1}</div><div>Message :{2}</div><div>Lead Date :{3}</div><div>Alternate EmailID :{4}</div><div>Alternate Mobile :{5}</div><div>India Mart Query ID :{6}</div>" \
 			.format( \
-								frappe.bold(lead_values.get('PRODUCT_NAME','Not specified')),
+								frappe.bold(lead_values.get('QUERY_PRODUCT_NAME','Not specified')),
 								frappe.bold(lead_values.get('SUBJECT','Not specified')),
-								frappe.bold(lead_values.get('ENQ_MESSAGE','Not specified')),
-								frappe.bold(lead_values.get('DATE_TIME_RE','Not specified')),
+								frappe.bold(lead_values.get('QUERY_MESSAGE','Not specified')),
+								frappe.bold(lead_values.get('QUERY_TIME','Not specified')),
 								frappe.bold(lead_values.get('EMAIL_ALT','Not specified')),
 								frappe.bold(lead_values.get('MOBILE_ALT','Not specified')),
-								frappe.bold(lead_values.get('QUERY_ID','Not specified'))
+								frappe.bold(lead_values.get('UNIQUE_QUERY_ID','Not specified'))
 								)
 
 			lead=frappe.get_doc('Lead', lead_name)
@@ -308,7 +311,7 @@ def update_existing_lead(lead_name,lead_values):
 				lead.notes=lead.notes+notes_html
 			else:
 				lead.notes=notes_html
-			lead.query_id_cf=lead_values.get('QUERY_ID')
+			lead.query_id_cf=lead_values.get('UNIQUE_QUERY_ID')
 			lead.status='Lead'
 			lead.flags.ignore_mandatory = True
 			lead.flags.ignore_permissions = True
@@ -320,13 +323,13 @@ def update_existing_lead(lead_name,lead_values):
 		else:
 			to_discuss_html="New Requirement \n Product Name : {0} \n Subject :{1} \n Message :{2} \n Lead Date :{3} \n Alternate EmailID :{4} \n Alternate Mobile :{5} \n India Mart Query ID :{6}" \
 			.format( \
-								frappe.bold(lead_values.get('PRODUCT_NAME','Not specified')),
+								frappe.bold(lead_values.get('QUERY_PRODUCT_NAME','Not specified')),
 								frappe.bold(lead_values.get('SUBJECT','Not specified')),
-								frappe.bold(lead_values.get('ENQ_MESSAGE','Not specified')),
-								frappe.bold(lead_values.get('DATE_TIME_RE','Not specified')),
+								frappe.bold(lead_values.get('QUERY_MESSAGE','Not specified')),
+								frappe.bold(lead_values.get('QUERY_TIME','Not specified')),
 								frappe.bold(lead_values.get('EMAIL_ALT','Not specified')),
 								frappe.bold(lead_values.get('MOBILE_ALT','Not specified')),
-								frappe.bold(lead_values.get('QUERY_ID','Not specified'))
+								frappe.bold(lead_values.get('UNIQUE_QUERY_ID','Not specified'))
 								)
 
 			opportunity=make_opportunity(source_name=lead_name)
@@ -339,7 +342,7 @@ def update_existing_lead(lead_name,lead_values):
 			opportunity_html='<br><br><div><B>New Oppurtunity {0} was created</B>'.format(opportunity.name)
 			lead=frappe.get_doc('Lead', lead_name)
 			lead.reload()
-			lead.query_id_cf=lead_values.get('QUERY_ID')
+			lead.query_id_cf=lead_values.get('UNIQUE_QUERY_ID')
 			if lead.notes:
 				lead.notes=lead.notes+opportunity_html
 			else:

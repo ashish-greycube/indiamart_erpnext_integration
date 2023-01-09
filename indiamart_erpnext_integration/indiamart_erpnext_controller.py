@@ -189,7 +189,8 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 				return output
 			# It is may be a fresh lead 
 			elif not lead_name:
-					lead_name = frappe.db.get_value("Lead", {"email_id": email_id})
+					if email_id and email_id!='':
+						lead_name = frappe.db.get_value("Lead", {"email_id": email_id})
 					# It is a repeat user having same email id
 					if lead_name:
 						existing_lead_output=update_existing_lead(lead_name,lead_values)

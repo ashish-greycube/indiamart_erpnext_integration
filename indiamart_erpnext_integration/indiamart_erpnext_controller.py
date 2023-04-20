@@ -91,7 +91,11 @@ def fetch_indiamart_data_and_make_integration_request(api_url,now_api_call_time)
 	valid_error_messages=['There are no leads in the given time duration. Please try for a different duration.',
 												'It is advised to hit this API once in every 5 minutes, but it seems that you have crossed this limit. Please try again after 5 minutes.']
     # v2
-	#  response={'CODE': 200, 'STATUS': 'SUCCESS', 'MESSAGE': '', 'TOTAL_RECORDS': 2, 'RESPONSE': [{'UNIQUE_QUERY_ID': '2243859917', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 09:34:45', 'SENDER_NAME': 'Shuaib', 'SENDER_MOBILE': '+91-8384869226', 'SENDER_EMAIL': '', 'SENDER_COMPANY': '', 'SENDER_ADDRESS': 'Dehradun, Uttarakhand', 'SENDER_CITY': 'Dehradun', 'SENDER_STATE': 'Uttarakhand', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Fuel Pressure Regulator Sensor', 'QUERY_MESSAGE': 'I want to buy Fuel Pressure Regulator Sensor.\r\rBefore purchasing I would like to know the price details.\r\rKindly send me price and other details.<br> Quantity :   1<br> Quantity Unit :   piece<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from Local Area will be Preferred<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}, {'UNIQUE_QUERY_ID': '2243945858', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 10:56:07', 'SENDER_NAME': 'Mamilla Ganga Shekhar', 'SENDER_MOBILE': '+91-9100843314', 'SENDER_EMAIL': 'gangadharmamilla@gmail.com', 'SENDER_COMPANY': 'VS Automation', 'SENDER_ADDRESS': 'KTR Colony, Hyderabad, Telangana,         500072', 'SENDER_CITY': 'Hyderabad', 'SENDER_STATE': 'Telangana', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Capacitive Proximity Sensors', 'QUERY_MESSAGE': 'I want to buy Capacitive Proximity Sensors.<br> Model :   Prk3pl1.btt3x4t<br> Quantity :   6<br> Quantity Unit :   piece<br> Sensing Distance :   0-0.3 Meter<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from all over India can contact<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}]}
+	# how to test, 
+	# (a)uncomment / comment response 
+	# (b) enable settings 
+	# (c) bench --site rfs execute indiamart_erpnext_integration.indiamart_erpnext_controller.auto_pull_indiamart_leads
+	# response={'CODE': 200, 'STATUS': 'SUCCESS', 'MESSAGE': '', 'TOTAL_RECORDS': 2, 'RESPONSE': [{'UNIQUE_QUERY_ID': '2243859917', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 09:34:45', 'SENDER_NAME': 'Shuaib', 'SENDER_MOBILE': '+91-8384869226', 'SENDER_EMAIL': '', 'SENDER_COMPANY': '', 'SENDER_ADDRESS': 'Dehradun, Uttarakhand', 'SENDER_CITY': 'Dehradun', 'SENDER_STATE': 'Uttarakhand', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Fuel Pressure Regulator Sensor', 'QUERY_MESSAGE': 'I want to buy Fuel Pressure Regulator Sensor.\r\rBefore purchasing I would like to know the price details.\r\rKindly send me price and other details.<br> Quantity :   1<br> Quantity Unit :   piece<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from Local Area will be Preferred<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}, {'UNIQUE_QUERY_ID': '2243945858', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 10:56:07', 'SENDER_NAME': 'Mamilla Ganga Shekhar', 'SENDER_MOBILE': '+91-9100843314', 'SENDER_EMAIL': 'gangadharmamilla@gmail.com', 'SENDER_COMPANY': 'VS Automation', 'SENDER_ADDRESS': 'KTR Colony, Hyderabad, Telangana,         500072', 'SENDER_CITY': 'Hyderabad', 'SENDER_STATE': 'Telangana', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Capacitive Proximity Sensors', 'QUERY_MESSAGE': 'I want to buy Capacitive Proximity Sensors.<br> Model :   Prk3pl1.btt3x4t<br> Quantity :   6<br> Quantity Unit :   piece<br> Sensing Distance :   0-0.3 Meter<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from all over India can contact<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}]}
 	response = make_post_request(api_url)
 	if not response:
 		return
@@ -135,7 +139,7 @@ def fetch_indiamart_data_and_make_integration_request(api_url,now_api_call_time)
 		status='Failed'	
 		# serious error. log it
 		error_message=error_message+'\nIntegration Request ID :'+integration_request.name
-		frappe.log_error(error_message, title=_('Indiamart Error'))	
+		frappe.log_error(message=error_message, title=_('Indiamart Error'))	
 
 	if 	status!='Failed':
 		#  use response_result
@@ -249,12 +253,13 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 						lead=frappe.new_doc('Lead')
 						lead_value_dict={
 							"lead_name": lead_values.get('SENDER_NAME'),
+							"first_name": lead_values.get('SENDER_NAME'),
 							"email_id":email_id,
 							"mobile_no": mobile_no,
 							"source":source or '',
 							"organization_lead":organization_lead,
 							"company_name":company_name,
-							"notes":notes_html,
+							# "notes":notes_html,
 							"state":state,
 							"country":country ,
 							"city": city or 'Not specified',
@@ -264,10 +269,11 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 							"address_line1":address_line1 or 'Not specified',
 							"address_line2":address_line2,
 							"pincode":pincode,
-							'contact_by':'',
+							# 'contact_by':'',
 							'lead_owner':lead_owner
 						}
 						lead.update(lead_value_dict)
+						lead.append('notes', {'note':notes_html})
 						lead.flags.ignore_mandatory = True
 						lead.flags.ignore_permissions = True
 						lead.save()
@@ -308,16 +314,16 @@ def update_existing_lead(lead_name,lead_values):
 
 			lead=frappe.get_doc('Lead', lead_name)
 			lead.reload()
-			if lead.notes:
-				lead.notes=lead.notes+notes_html
+			if lead.notes and len(lead.notes)>0:
+				lead.get("notes")[0].note=lead.notes[0].note+notes_html
 			else:
-				lead.notes=notes_html
+				lead.append('notes', {'note':notes_html})
 			lead.query_id_cf=lead_values.get('UNIQUE_QUERY_ID')
 			lead.status='Lead'
 			lead.flags.ignore_mandatory = True
 			lead.flags.ignore_permissions = True
-			lead.contact_date=''
-			lead.contact_by=''
+			# lead.contact_date=''
+			# lead.contact_by=''
 			lead.save()	
 			existing_lead_output='Lead notes updated for {0}'.format(lead_name)
 			return existing_lead_output	
@@ -344,12 +350,12 @@ def update_existing_lead(lead_name,lead_values):
 			lead=frappe.get_doc('Lead', lead_name)
 			lead.reload()
 			lead.query_id_cf=lead_values.get('UNIQUE_QUERY_ID')
-			if lead.notes:
-				lead.notes=lead.notes+opportunity_html
+			if lead.notes and len(lead.notes)>0:
+				lead.get("notes")[0].note=lead.notes[0].note+opportunity_html
 			else:
-				lead.notes=opportunity_html
-			lead.contact_date=''
-			lead.contact_by=''
+				lead.append('notes', {'note':opportunity_html})
+			# lead.contact_date=''
+			# lead.contact_by=''
 			lead.flags.ignore_mandatory = True
 			lead.flags.ignore_permissions = True
 			lead.save()		

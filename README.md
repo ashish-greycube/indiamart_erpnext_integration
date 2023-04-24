@@ -51,6 +51,9 @@
 
 2. Enter all details in Indiamart Settings doctype. ex URL https://<yourdomain.com>/app/indiamart-settings
    *![](https://greycube.in/files/erpnext_indiamart_settings_greycube.png)
+   
+3. v14: CRM settings-> Auto creation of contacts : check
+![image (12)](https://user-images.githubusercontent.com/29812965/233940505-6bb36efc-899a-4121-a92d-25cfec34425c.png)
 
 **Support**
 

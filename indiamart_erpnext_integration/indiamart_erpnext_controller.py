@@ -205,6 +205,7 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 					elif not lead_name:
 					# it is finally a fresh lead
 						# source logic 
+						source=''
 						if lead_values.get('QUERY_TYPE') == 'W' :
 							source= frappe.db.get_single_value('Indiamart Settings', 'direct_lead_source')
 						elif lead_values.get('QUERY_TYPE') == 'B' :

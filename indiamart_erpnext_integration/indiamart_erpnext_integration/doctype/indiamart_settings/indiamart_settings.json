@@ -22,7 +22,7 @@
  "fields": [
   {
    "default": "0",
-   "description": "Pulls lead every 5 minutes",
+   "description": "Pulls lead every 6 minutes",
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled"
@@ -50,10 +50,11 @@
    "mandatory_depends_on": "enabled"
   },
   {
-   "description": "It decides the new start time i.e. start time='Last API Call Time' - 5 minutes.\nand  new 'Last API Call Time' will be now time.\nApp sets it automatically. You need not set it",
+   "description": "It decides the new start time i.e. start time='Last API Call Time' - 7 minutes.\nand  new 'Last API Call Time' will be now time.\nApp sets it automatically. You need not set it\"",
    "fieldname": "last_api_call_time",
    "fieldtype": "Datetime",
-   "label": "Last API Call Time"
+   "label": "Last API Call Time",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_5",
@@ -112,7 +113,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-07-02 09:37:08.050179",
+ "modified": "2024-01-04 18:39:42.721641",
  "modified_by": "Administrator",
  "module": "Indiamart Erpnext Integration",
  "name": "Indiamart Settings",
@@ -131,5 +132,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

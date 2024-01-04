@@ -5,16 +5,14 @@ frappe.ui.form.on('Indiamart Settings', {
 	refresh: function (frm) {
 		if (frm.is_new() == undefined && frm.doc.enabled == 1) {
 			frm.add_custom_button('Manually Pull Lead', () => {
-				let now_time = frappe.datetime.now_datetime()
 				let d = new frappe.ui.Dialog({
 					title: 'Use only, when you need to retrigger indimart lead pull for a particular time frame',
 					fields: [{
 							label: 'Start Date Time',
 							fieldname: 'start_time',
 							fieldtype: 'Datetime',
-							default: moment(frappe.datetime.now_datetime()).subtract({
-								minutes: 5
-							}),
+							// todo15: current -7
+							default: moment().add(-7,'minutes').format(frappe.defaultDatetimeFormat),
 							reqd: 1
 						},
 						{
@@ -28,7 +26,7 @@ frappe.ui.form.on('Indiamart Settings', {
 					],
 					primary_action_label: 'Fetch',
 					primary_action(values) {
-						console.log(values);
+						console.log('11',values);
 						frappe.call({
 							method: 'indiamart_erpnext_integration.indiamart_erpnext_controller.manual_pull_indiamart_leads',
 							args: {

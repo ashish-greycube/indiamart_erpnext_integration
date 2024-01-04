@@ -24,7 +24,7 @@
 
 **Features**
 
-* Pull Leads from IndiaMart via API every 5 mins. Overlap is such that no lead is lost.
+* Pull Leads from IndiaMart via API every 6 mins for 7 mins duration. Overlap is such that no lead is lost.
 * Create Leads automatically in ERPNext
 * Maps respective fields of IndiaMart with ERPNext Lead.👀️
   *![](https://greycube.in/files/lead_data_captured_erpnext_greycube.png)

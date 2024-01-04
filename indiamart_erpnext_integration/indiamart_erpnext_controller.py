@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.integrations.utils import create_request_log,make_post_request
-from frappe.utils import get_datetime,now_datetime,format_datetime
+from frappe.utils import get_datetime,now_datetime,format_datetime,cstr
 from datetime import timedelta
 import datetime
 from frappe.utils.password import get_decrypted_password
@@ -57,11 +57,13 @@ def get_indiamart_configuration():
 def get_indiamart_api_url(indiamart_settings,start_time=None,end_time=None):
 	URL_DATETIME_FORMAT = 'd-MMM-yHH:mm:ss'
 	# INDIAMART_URL = 'https://mapi.indiamart.com/wservce/enquiry/listing/GLUSR_MOBILE/{0}/GLUSR_MOBILE_KEY/{1}/Start_Time/{2}/End_Time/{3}/'
+	# https://mapi.indiamart.com/wservce/crm/crmListing/v2/?glusr_crm_key=1mRyzE7ll43bDTvev4nCI7luMoFPDlTQ=&start_time=4-Jan-202415:38:44&end_time=4-Jan-202415:46:41
 	INDIAMART_URL = 'https://mapi.indiamart.com/wservce/crm/crmListing/v2/?glusr_crm_key={1}&start_time={2}&end_time={3}'
 
 	#  scheduler flow
 	if start_time==None:
 		# set start time as minus 5 minutes the last api call time
+		print("indiamart_settings.get('last_api_call_time')",indiamart_settings.get('last_api_call_time'))
 		if indiamart_settings.get('last_api_call_time'):
 			start_time=get_datetime(indiamart_settings.get('last_api_call_time')) - datetime.timedelta(minutes=5)
 		else:
@@ -78,11 +80,13 @@ def get_indiamart_api_url(indiamart_settings,start_time=None,end_time=None):
 		# we don't change last call time as it is a manual attempt
 		now_api_call_time=indiamart_settings.get('last_api_call_time') or now_datetime()
 	#  to do : put in config
+	print('start_time',start_time,'end_time',end_time)
 	api_url = INDIAMART_URL.format(
 				indiamart_settings.get('glusr_mobile'),
 				get_decrypted_password('Indiamart Settings','Indiamart Settings','glusr_mobile_key'),
 				start_time,
 				end_time)
+	print(api_url,now_api_call_time,'api_url,now_api_call_time')
 	return api_url,now_api_call_time
 
 
@@ -95,8 +99,9 @@ def fetch_indiamart_data_and_make_integration_request(api_url,now_api_call_time)
 	# (a)uncomment / comment response 
 	# (b) enable settings 
 	# (c) bench --site rfs execute indiamart_erpnext_integration.indiamart_erpnext_controller.auto_pull_indiamart_leads
-	# response={'CODE': 200, 'STATUS': 'SUCCESS', 'MESSAGE': '', 'TOTAL_RECORDS': 2, 'RESPONSE': [{'UNIQUE_QUERY_ID': '2243859917', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 09:34:45', 'SENDER_NAME': 'Shuaib', 'SENDER_MOBILE': '+91-8384869226', 'SENDER_EMAIL': '', 'SENDER_COMPANY': '', 'SENDER_ADDRESS': 'Dehradun, Uttarakhand', 'SENDER_CITY': 'Dehradun', 'SENDER_STATE': 'Uttarakhand', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Fuel Pressure Regulator Sensor', 'QUERY_MESSAGE': 'I want to buy Fuel Pressure Regulator Sensor.\r\rBefore purchasing I would like to know the price details.\r\rKindly send me price and other details.<br> Quantity :   1<br> Quantity Unit :   piece<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from Local Area will be Preferred<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}, {'UNIQUE_QUERY_ID': '2243945858', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 10:56:07', 'SENDER_NAME': 'Mamilla Ganga Shekhar', 'SENDER_MOBILE': '+91-9100843314', 'SENDER_EMAIL': 'gangadharmamilla@gmail.com', 'SENDER_COMPANY': 'VS Automation', 'SENDER_ADDRESS': 'KTR Colony, Hyderabad, Telangana,         500072', 'SENDER_CITY': 'Hyderabad', 'SENDER_STATE': 'Telangana', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Capacitive Proximity Sensors', 'QUERY_MESSAGE': 'I want to buy Capacitive Proximity Sensors.<br> Model :   Prk3pl1.btt3x4t<br> Quantity :   6<br> Quantity Unit :   piece<br> Sensing Distance :   0-0.3 Meter<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from all over India can contact<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}]}
-	response = make_post_request(api_url)
+	response={'CODE': 200, 'STATUS': 'SUCCESS', 'MESSAGE': '', 'TOTAL_RECORDS': 2, 'RESPONSE': [{'UNIQUE_QUERY_ID': '2243859917', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 09:34:45', 'SENDER_NAME': 'Shuaib', 'SENDER_MOBILE': '+91-8384869226', 'SENDER_EMAIL': '', 'SENDER_COMPANY': '', 'SENDER_ADDRESS': 'Dehradun, Uttarakhand', 'SENDER_CITY': 'Dehradun', 'SENDER_STATE': 'Uttarakhand', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Fuel Pressure Regulator Sensor', 'QUERY_MESSAGE': 'I want to buy Fuel Pressure Regulator Sensor.\r\rBefore purchasing I would like to know the price details.\r\rKindly send me price and other details.<br> Quantity :   1<br> Quantity Unit :   piece<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from Local Area will be Preferred<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}, {'UNIQUE_QUERY_ID': '2243945858', 'QUERY_TYPE': 'W', 'QUERY_TIME': '2022-09-17 10:56:07', 'SENDER_NAME': 'Mamilla Ganga Shekhar', 'SENDER_MOBILE': '+91-9100843314', 'SENDER_EMAIL': 'gangadharmamilla@gmail.com', 'SENDER_COMPANY': 'VS Automation', 'SENDER_ADDRESS': 'KTR Colony, Hyderabad, Telangana,         500072', 'SENDER_CITY': 'Hyderabad', 'SENDER_STATE': 'Telangana', 'SENDER_COUNTRY_ISO': 'IN', 'SENDER_MOBILE_ALT': '', 'SENDER_PHONE': '', 'SENDER_PHONE_ALT': '', 'SENDER_EMAIL_ALT': '', 'QUERY_PRODUCT_NAME': 'Capacitive Proximity Sensors', 'QUERY_MESSAGE': 'I want to buy Capacitive Proximity Sensors.<br> Model :   Prk3pl1.btt3x4t<br> Quantity :   6<br> Quantity Unit :   piece<br> Sensing Distance :   0-0.3 Meter<br> Probable Order Value :   Rs. 3,000 to 10,000<br> Probable Requirement Type :   Business Use<br>Preferred Location: Suppliers from all over India can contact<br>', 'CALL_DURATION': '', 'RECEIVER_MOBILE': ''}]}
+	# response={'CODE': 200, 'STATUS': 'SUCCESS', 'MESSAGE': '', 'TOTAL_RECORDS': 2, 'RESPONSE': [{"UNIQUE_QUERY_ID": "2643097564", "QUERY_TYPE": "W", "QUERY_TIME": "2023-12-29 18:14:37", "SENDER_NAME": "Rajendra Singh Rathore", "SENDER_MOBILE": "+91-9680852019", "SENDER_EMAIL": "rajendarsingh02218@gmail.com", "SUBJECT": "Requirement for 550 W Mono PERC PV Solar Module", "SENDER_COMPANY": "Mumbai Fashions", "SENDER_ADDRESS": "6/682, Ground Floor, Ernakulam, Kerala,         683513", "SENDER_CITY": "Ernakulam", "SENDER_STATE": "Kerala", "SENDER_PINCODE": "683513", "SENDER_COUNTRY_ISO": "IN", "SENDER_MOBILE_ALT": "", "SENDER_PHONE": "", "SENDER_PHONE_ALT": "", "SENDER_EMAIL_ALT": "", "QUERY_PRODUCT_NAME": "550 W Mono PERC PV Solar Module", "QUERY_MESSAGE": "I am interested in 550 W Mono PERC PV Solar Module<br>", "QUERY_MCAT_NAME": "Monocrystalline Solar Panel", "CALL_DURATION": "", "RECEIVER_MOBILE": ""},{"UNIQUE_QUERY_ID": "154427286", "QUERY_TYPE": "P", "QUERY_TIME": "2024-01-01 20:36:42", "SENDER_NAME": "Anirudhya", "SENDER_MOBILE": "+91-7063035636", "SENDER_EMAIL": "", "SUBJECT": "Buyer Call", "SENDER_COMPANY": "Mayadevi Enterprise Banerjee And Sons Pvt Limited", "SENDER_ADDRESS": "Purulia, West Bengal", "SENDER_CITY": "Purulia", "SENDER_STATE": "West Bengal", "SENDER_PINCODE": "", "SENDER_COUNTRY_ISO": "IN", "SENDER_MOBILE_ALT": "", "SENDER_PHONE": "", "SENDER_PHONE_ALT": "", "SENDER_EMAIL_ALT": "", "QUERY_PRODUCT_NAME": "", "QUERY_MESSAGE": "", "QUERY_MCAT_NAME": "", "CALL_DURATION": "105", "RECEIVER_MOBILE": "8048956627"},{"UNIQUE_QUERY_ID": "2646648941", "QUERY_TYPE": "W", "QUERY_TIME": "2024-01-03 14:08:55", "SENDER_NAME": "Himanshu Aggarwal", "SENDER_MOBILE": "+91-9811610456", "SENDER_EMAIL": "sidaggarwal91@gmail.com", "SUBJECT": "Requirement for 1 hp Amrut Energy Submersible Pump", "SENDER_COMPANY": "", "SENDER_ADDRESS": "New Delhi, Delhi", "SENDER_CITY": "New Delhi", "SENDER_STATE": "Delhi", "SENDER_PINCODE": "", "SENDER_COUNTRY_ISO": "IN", "SENDER_MOBILE_ALT": "", "SENDER_PHONE": "", "SENDER_PHONE_ALT": "", "SENDER_EMAIL_ALT": "", "QUERY_PRODUCT_NAME": "1 hp Amrut Energy Submersible Pump", "QUERY_MESSAGE": "I am interested in 1 hp Amrut Energy Submersible Pump<br>", "QUERY_MCAT_NAME": "Submersible Pump", "CALL_DURATION": "", "RECEIVER_MOBILE": ""}]}
+	# response = make_post_request(api_url)
 	if not response:
 		return
 
@@ -251,6 +256,8 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 										address_line1=address[index : index + n]
 									elif index==1:
 										address_line2=address[index : index + n]
+
+
 						lead=frappe.new_doc('Lead')
 						lead_value_dict={
 							"lead_name": lead_values.get('SENDER_NAME'),
@@ -258,18 +265,18 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 							"email_id":email_id,
 							"mobile_no": mobile_no,
 							"source":source or '',
-							"organization_lead":organization_lead,
+							# "organization_lead":organization_lead,
 							"company_name":company_name,
 							# "notes":notes_html,
 							"state":state,
 							"country":country ,
 							"city": city or 'Not specified',
 							"query_id_cf":lead_values.get('UNIQUE_QUERY_ID'),
-							"address_title":address_title or 'Other',
-							"address_type":address_type or 'Other',
-							"address_line1":address_line1 or 'Not specified',
-							"address_line2":address_line2,
-							"pincode":pincode,
+							# "address_title":address_title or 'Other',
+							# "address_type":address_type or 'Other',
+							# "address_line1":address_line1 or 'Not specified',
+							# "address_line2":address_line2,
+							# "pincode":pincode,
 							# 'contact_by':'',
 							'lead_owner':lead_owner
 						}
@@ -278,7 +285,24 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 						lead.flags.ignore_mandatory = True
 						lead.flags.ignore_permissions = True
 						lead.save()
-						
+						if address:
+							print('address',address)
+							address = frappe.get_doc({
+									"doctype": "Address",
+									"address_title": address_title or 'Other',
+									"address_type":address_type or 'Other',
+									"address_line1":address_line1 or 'Not specified',
+									"address_line2": address_line2,
+									"city": city or 'Not specified',
+									"state": state,
+									"pincode": cstr(pincode),
+									"country":country,
+									"links": [{"link_doctype": 'Lead', "link_name": lead.name}],
+								})
+							address.flags.ignore_mandatory = True
+							address.flags.ignore_permissions = True
+							print('address1',address)
+							address.insert()						
 						# update details to indiamart lead doctype
 						output='Lead {0} is created.'.format(lead.name)
 						frappe.db.set_value('Indiamart Lead', indiamart_lead_name, 'output', output)

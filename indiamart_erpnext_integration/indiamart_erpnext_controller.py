@@ -65,10 +65,10 @@ def get_indiamart_api_url(indiamart_settings,start_time=None,end_time=None):
 		# set start time as minus 5 minutes the last api call time
 		print("indiamart_settings.get('last_api_call_time')",indiamart_settings.get('last_api_call_time'))
 		if indiamart_settings.get('last_api_call_time'):
-			start_time=get_datetime(indiamart_settings.get('last_api_call_time')) - datetime.timedelta(minutes=5)
+			start_time=get_datetime(indiamart_settings.get('last_api_call_time')) - datetime.timedelta(minutes=7)
 		else:
 			# first time, last_api_call_time will be empty
-			start_time= now_datetime() - datetime.timedelta(minutes=5)
+			start_time= now_datetime() - datetime.timedelta(minutes=7)
 
 		start_time=format_datetime(start_time,URL_DATETIME_FORMAT)
 		now_api_call_time=now_datetime()

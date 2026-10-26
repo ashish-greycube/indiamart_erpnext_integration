@@ -12,6 +12,8 @@ from six import string_types
 import traceback,sys
 from erpnext.crm.doctype.lead.lead import make_opportunity
 
+from indiamart_erpnext_integration.AM import get_territory, get_lead_owner
+
 
 # manually pull leads for given time frame
 @frappe.whitelist()
@@ -179,12 +181,13 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 		country=frappe.get_value("Country", {"code": lead_values.get("SENDER_COUNTRY_ISO", "IN").lower()}) or 'India'
 		state=lead_values.get('SENDER_STATE',None)
 		city=lead_values.get('SENDER_CITY',None)
+		territory=get_territory(city, state, country)
 		email_id=lead_values.get('SENDER_EMAIL',None)
 		raw_mobile_no=lead_values.get('SENDER_MOBILE') or None
 		# IndiaMART sends +91-XXXXXXXXXX; save the bare number (same as old indiamart_integration app)
 		mobile_no=raw_mobile_no.removeprefix('+91-') if raw_mobile_no else None
 
-		lead_owner=user
+		lead_owner=get_lead_owner(territory, user)
 		lead_name = None
 		lead_name = frappe.db.get_value("Lead", {"query_id_cf": lead_values.get('UNIQUE_QUERY_ID')})
 		# It is a new lead from indiamart
@@ -273,6 +276,7 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 							"state":state,
 							"country":country ,
 							"city": city or 'Not specified',
+							"territory":territory,
 							"query_id_cf":lead_values.get('UNIQUE_QUERY_ID'),
 							# "address_title":address_title or 'Other',
 							# "address_type":address_type or 'Other',
@@ -347,6 +351,8 @@ def update_existing_lead(lead_name,lead_values):
 				lead.append('notes', {'note':notes_html})
 			lead.query_id_cf=lead_values.get('UNIQUE_QUERY_ID')
 			lead.status='Lead'
+			if frappe.get_meta("Lead").get_field("stage_cf"):
+				lead.stage_cf = 'New'
 			lead.flags.ignore_mandatory = True
 			lead.flags.ignore_permissions = True
 			# lead.contact_date=''
@@ -377,6 +383,9 @@ def update_existing_lead(lead_name,lead_values):
 			lead=frappe.get_doc('Lead', lead_name)
 			lead.reload()
 			lead.query_id_cf=lead_values.get('UNIQUE_QUERY_ID')
+			# status here is already recomputed by the new Opportunity: Converted, Quotation or Opportunity
+			if frappe.get_meta("Lead").get_field("stage_cf"):
+				lead.stage_cf = 'Converted/Customer' if lead.status == 'Converted' else 'Qualified'
 			if lead.notes and len(lead.notes)>0:
 				lead.get("notes")[0].note=lead.notes[0].note+opportunity_html
 			else:

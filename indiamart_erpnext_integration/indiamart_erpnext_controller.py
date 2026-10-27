@@ -180,15 +180,17 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 		state=lead_values.get('SENDER_STATE',None)
 		city=lead_values.get('SENDER_CITY',None)
 		email_id=lead_values.get('SENDER_EMAIL',None)
-		mobile_no=lead_values.get('SENDER_MOBILE',None)		
+		raw_mobile_no=lead_values.get('SENDER_MOBILE') or None
+		# IndiaMART sends +91-XXXXXXXXXX; save the bare number (same as old indiamart_integration app)
+		mobile_no=raw_mobile_no.removeprefix('+91-') if raw_mobile_no else None
 
 		lead_owner=user
 		lead_name = None
 		lead_name = frappe.db.get_value("Lead", {"query_id_cf": lead_values.get('UNIQUE_QUERY_ID')})
 		# It is a new lead from indiamart
 		if not lead_name :
-			check_duplicate_mobile_no=mobile_no
-			lead_name = frappe.db.get_value("Lead", {"mobile_no": check_duplicate_mobile_no})
+			# match both forms: old leads saved bare, leads from this app saved with +91-
+			lead_name = mobile_no and frappe.db.get_value("Lead", {"mobile_no": ["in", [mobile_no, raw_mobile_no]]})
 			#  It is a repeat user having same mobile_no
 			if lead_name:
 				existing_lead_output=update_existing_lead(lead_name,lead_values)

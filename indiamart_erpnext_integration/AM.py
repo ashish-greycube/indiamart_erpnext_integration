@@ -1,5 +1,44 @@
 import frappe
 
+# 2021-22 IndiaMART payloads, mapped to the names the current API uses
+OLD_PAYLOAD_FIELDS = {
+	"QUERY_ID": "UNIQUE_QUERY_ID",
+	"QTYPE": "QUERY_TYPE",
+	"SENDERNAME": "SENDER_NAME",
+	"MOB": "SENDER_MOBILE",
+	"SENDEREMAIL": "SENDER_EMAIL",
+	"GLUSR_USR_COMPANYNAME": "SENDER_COMPANY",
+	"ENQ_ADDRESS": "SENDER_ADDRESS",
+	"ENQ_CITY": "SENDER_CITY",
+	"ENQ_STATE": "SENDER_STATE",
+	"COUNTRY_ISO": "SENDER_COUNTRY_ISO",
+	"PRODUCT_NAME": "QUERY_PRODUCT_NAME",
+	"ENQ_MESSAGE": "QUERY_MESSAGE",
+	"DATE_TIME_RE": "QUERY_TIME",
+}
+
+
+# IndiaMART state names that India Compliance rejects on Address
+STATE_NAMES = {
+	"Jammu & Kashmir": "Jammu and Kashmir",
+	"Andaman & Nicobar": "Andaman and Nicobar Islands",
+	"Pondicherry": "Puducherry",
+}
+
+
+def map_old_payload_fields(lead_values):
+	"""Blank old values stay unmapped, so .get() defaults like "IN" and "Not specified" still apply."""
+	for old_field, new_field in OLD_PAYLOAD_FIELDS.items():
+		if lead_values.get(old_field):
+			lead_values[new_field] = lead_values[old_field]
+
+
+def set_lead_defaults(lead):
+	"""Status is recomputed on save for leads with an Opportunity, Quotation or Customer."""
+	lead.status = "Lead"
+	lead.stage_cf = "New"
+	lead.purpose = ""
+
 
 def get_territory(city, state, country):
 	"""Return the most specific Territory available for the enquiry."""

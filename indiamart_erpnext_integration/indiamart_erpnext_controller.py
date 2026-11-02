@@ -12,7 +12,7 @@ from six import string_types
 import traceback,sys
 from erpnext.crm.doctype.lead.lead import make_opportunity
 
-from indiamart_erpnext_integration.AM import get_territory, get_lead_owner
+from indiamart_erpnext_integration.AM import STATE_NAMES, get_territory, get_lead_owner, map_old_payload_fields, set_lead_defaults
 
 
 # manually pull leads for given time frame
@@ -65,7 +65,6 @@ def get_indiamart_api_url(indiamart_settings,start_time=None,end_time=None):
 	#  scheduler flow
 	if start_time==None:
 		# set start time as minus 5 minutes the last api call time
-		print("indiamart_settings.get('last_api_call_time')",indiamart_settings.get('last_api_call_time'))
 		if indiamart_settings.get('last_api_call_time'):
 			start_time=get_datetime(indiamart_settings.get('last_api_call_time')) - datetime.timedelta(minutes=7)
 		else:
@@ -82,13 +81,11 @@ def get_indiamart_api_url(indiamart_settings,start_time=None,end_time=None):
 		# we don't change last call time as it is a manual attempt
 		now_api_call_time=indiamart_settings.get('last_api_call_time') or now_datetime()
 	#  to do : put in config
-	print('start_time',start_time,'end_time',end_time)
 	api_url = INDIAMART_URL.format(
 				indiamart_settings.get('glusr_mobile'),
 				get_decrypted_password('Indiamart Settings','Indiamart Settings','glusr_mobile_key'),
 				start_time,
 				end_time)
-	print(api_url,now_api_call_time,'api_url,now_api_call_time')
 	return api_url,now_api_call_time
 
 
@@ -176,10 +173,12 @@ def make_indiamart_lead_records(lead_values,integration_request,status='Queued',
 
 def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 	try:
+		map_old_payload_fields(lead_values)
 		output=None
 		user=frappe.db.get_single_value('Indiamart Settings', 'default_lead_owner')
 		country=frappe.get_value("Country", {"code": lead_values.get("SENDER_COUNTRY_ISO", "IN").lower()}) or 'India'
 		state=lead_values.get('SENDER_STATE',None)
+		state=STATE_NAMES.get(state, state)
 		city=lead_values.get('SENDER_CITY',None)
 		territory=get_territory(city, state, country)
 		email_id=lead_values.get('SENDER_EMAIL',None)
@@ -287,12 +286,12 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 							'lead_owner':lead_owner
 						}
 						lead.update(lead_value_dict)
+						set_lead_defaults(lead)
 						lead.append('notes', {'note':notes_html})
 						lead.flags.ignore_mandatory = True
 						lead.flags.ignore_permissions = True
 						lead.save()
 						if address:
-							print('address',address)
 							address = frappe.get_doc({
 									"doctype": "Address",
 									"address_title": address_title or 'Other',
@@ -307,7 +306,6 @@ def make_erpnext_lead_from_inidamart(lead_values,indiamart_lead_name=None):
 								})
 							address.flags.ignore_mandatory = True
 							address.flags.ignore_permissions = True
-							print('address1',address)
 							address.insert()						
 						# update details to indiamart lead doctype
 						output='Lead {0} is created.'.format(lead.name)
@@ -350,9 +348,7 @@ def update_existing_lead(lead_name,lead_values):
 			else:
 				lead.append('notes', {'note':notes_html})
 			lead.query_id_cf=lead_values.get('UNIQUE_QUERY_ID')
-			lead.status='Lead'
-			if frappe.get_meta("Lead").get_field("stage_cf"):
-				lead.stage_cf = 'New'
+			set_lead_defaults(lead)
 			lead.flags.ignore_mandatory = True
 			lead.flags.ignore_permissions = True
 			# lead.contact_date=''
@@ -383,9 +379,7 @@ def update_existing_lead(lead_name,lead_values):
 			lead=frappe.get_doc('Lead', lead_name)
 			lead.reload()
 			lead.query_id_cf=lead_values.get('UNIQUE_QUERY_ID')
-			# status here is already recomputed by the new Opportunity: Converted, Quotation or Opportunity
-			if frappe.get_meta("Lead").get_field("stage_cf"):
-				lead.stage_cf = 'Converted/Customer' if lead.status == 'Converted' else 'Qualified'
+			set_lead_defaults(lead)
 			if lead.notes and len(lead.notes)>0:
 				lead.get("notes")[0].note=lead.notes[0].note+opportunity_html
 			else:

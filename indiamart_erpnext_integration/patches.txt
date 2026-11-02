@@ -1,0 +1,4 @@
+[pre_model_sync]
+
+[post_model_sync]
+indiamart_erpnext_integration.patches.process_stuck_indiamart_leads
